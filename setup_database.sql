@@ -1,66 +1,70 @@
 -- =============================================================
 -- Datenbankschema für Wetterdaten (OpenWeatherMap)
--- SQLite-kompatibel
+-- Azure SQL – Schema dbo
 -- =============================================================
-CREATE DATABASE IF NOT EXISTS cloud_computing_db;
-USE cloud_computing_db;
 
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'cities' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.cities (
+        id               INT          NOT NULL IDENTITY(1,1) PRIMARY KEY,
+        name             NVARCHAR(64) NOT NULL,
+        country          NVARCHAR(64),
+        lat              FLOAT,
+        lon              FLOAT,
+        timezone_offset  INT,
+        CONSTRAINT UQ_cities_name UNIQUE (name)
+    );
+END
+GO
 
-CREATE TABLE IF NOT EXISTS cities (
-    id               INTEGER PRIMARY KEY AUTO_INCREMENT,
-    name             VARCHAR(64)  NOT NULL UNIQUE,
-    country          VARCHAR(64),
-    lat              FLOAT,
-    lon              FLOAT,
-    timezone_offset  INTEGER
-);
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'weather_current' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.weather_current (
+        id                  INT           NOT NULL IDENTITY(1,1) PRIMARY KEY,
+        city_id             INT           NOT NULL,
+        fetched_at          DATETIME2     NOT NULL,
+        measured_at         DATETIME2     NOT NULL,
+        temp                FLOAT,
+        feels_like          FLOAT,
+        temp_min            FLOAT,
+        temp_max            FLOAT,
+        humidity            INT,
+        pressure            INT,
+        weather_main        NVARCHAR(64),
+        weather_description NVARCHAR(128),
+        weather_icon        NVARCHAR(16),
+        wind_speed          FLOAT,
+        wind_deg            INT,
+        clouds              INT,
+        visibility          INT,
+        sunrise             DATETIME2,
+        sunset              DATETIME2,
+        CONSTRAINT FK_weather_current_city FOREIGN KEY (city_id) REFERENCES dbo.cities(id)
+    );
+END
+GO
 
-
--- Aktuelle Wettermessungen
-CREATE TABLE IF NOT EXISTS weather_current (
-    id                  INTEGER PRIMARY KEY AUTO_INCREMENT,
-    city_id             INTEGER NOT NULL,
-    fetched_at          VARCHAR(64)    NOT NULL,   -- UTC-Zeitpunkt des API-Abrufs
-    measured_at         VARCHAR(64)    NOT NULL,   -- Messzeitpunkt laut API (UTC)
-    temp                FLOAT,
-    feels_like          FLOAT,
-    temp_min            FLOAT,
-    temp_max            FLOAT,
-    humidity            INTEGER,
-    pressure            INTEGER,
-    weather_main        VARCHAR(64),
-    weather_description VARCHAR(64),
-    weather_icon        VARCHAR(64),
-    wind_speed          FLOAT,
-    wind_deg            INTEGER,
-    clouds              INTEGER,
-    visibility          INTEGER,
-    sunrise             VARCHAR(64),
-    sunset              VARCHAR(64),
-    FOREIGN KEY (city_id) REFERENCES cities(id)
-);
-
--- 5-Tage-Vorhersage (3-Stunden-Intervalle)
-CREATE TABLE IF NOT EXISTS weather_forecast (
-    id                  INTEGER PRIMARY KEY AUTO_INCREMENT,
-    city_id             INTEGER NOT NULL,
-    fetched_at          VARCHAR(64)    NOT NULL,   -- UTC-Zeitpunkt des API-Abrufs
-    forecast_at         VARCHAR(64)    NOT NULL,   -- Vorhersagezeitpunkt (UTC)
-    temp                FLOAT,
-    feels_like          FLOAT,
-    temp_min            FLOAT,
-    temp_max            FLOAT,
-    humidity            INTEGER,
-    pressure            INTEGER,
-    weather_main        VARCHAR(64),
-    weather_description VARCHAR(64),
-    weather_icon        VARCHAR(64),
-    wind_speed          FLOAT,
-    wind_deg            INTEGER,
-    clouds              INTEGER,
-    pop                 FLOAT,              -- Niederschlagswahrscheinlichkeit (0-1)
-    FOREIGN KEY (city_id) REFERENCES cities(id)
-);
-
-
-
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'weather_forecast' AND schema_id = SCHEMA_ID('dbo'))
+BEGIN
+    CREATE TABLE dbo.weather_forecast (
+        id                  INT           NOT NULL IDENTITY(1,1) PRIMARY KEY,
+        city_id             INT           NOT NULL,
+        fetched_at          DATETIME2     NOT NULL,
+        forecast_at         DATETIME2     NOT NULL,
+        temp                FLOAT,
+        feels_like          FLOAT,
+        temp_min            FLOAT,
+        temp_max            FLOAT,
+        humidity            INT,
+        pressure            INT,
+        weather_main        NVARCHAR(64),
+        weather_description NVARCHAR(128),
+        weather_icon        NVARCHAR(16),
+        wind_speed          FLOAT,
+        wind_deg            INT,
+        clouds              INT,
+        pop                 FLOAT,
+        CONSTRAINT FK_weather_forecast_city FOREIGN KEY (city_id) REFERENCES dbo.cities(id)
+    );
+END
+GO
