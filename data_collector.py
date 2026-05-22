@@ -26,7 +26,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 SCHEMA_PATH = Path(__file__).parent / "setup_database.sql"
 
-CITIES   = ["Berlin", "Heilbronn", "Hamburg", "Wien", "Zürich", "Wellington","Jakarta","Kabul","Tripolis","Manaus","Boston","Nuuk", "Santa Babara"]
+CITIES   = ["Berlin", "Heilbronn", "Hamburg", "Wien","Oulu", "Zürich", "Wellington","Jakarta","Kabul","Tripolis","Manaus","Boston","Nuuk", "Santa Babara"]
 INTERVAL = 360  # Minuten
 
 # ---------------------------------------------------------------------------
